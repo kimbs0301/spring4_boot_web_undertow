@@ -8,6 +8,9 @@ Undertow는 쉽게 사용할 수 있는 높은 수준의 Builder API를 통해 �
 Undertow의 라이프 사이클은 임베딩 애플리케이션에서 완벽하게 제어 할 수 있다.
 
 
+이클립스 VM arguments
+-server -Xms256m -Xmx256m -XX:+UseG1GC -XX:+UnlockDiagnosticVMOptions -XX:InitiatingHeapOccupancyPercent=35 -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=local
+
 cd /workspace/luna/spring4_boot_web_undertow
 git add -A
 git commit -a -m "ok"

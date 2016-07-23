@@ -1,9 +1,10 @@
-package com.example.main;
+package com.example.junit;
+
+import java.util.Arrays;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration;
@@ -12,19 +13,23 @@ import org.springframework.boot.autoconfigure.jmx.JmxAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.EmbeddedServletContainerAutoConfiguration;
 import org.springframework.boot.autoconfigure.websocket.WebSocketAutoConfiguration;
-import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.example.embedded.EmbeddedUndertowConfig;
 import com.example.spring.config.WebAppContextConfig;
 
 /**
  * @author gimbyeongsu
  * 
  */
-@Configurable
+@Configuration
 @EnableAutoConfiguration(exclude = { EmbeddedServletContainerAutoConfiguration.class, //
 		JmxAutoConfiguration.class, //
 		SpringApplicationAdminJmxAutoConfiguration.class, //
@@ -33,20 +38,31 @@ import com.example.spring.config.WebAppContextConfig;
 		SpringDataWebAutoConfiguration.class, //
 		SecurityAutoConfiguration.class //
 })
-@ComponentScan(basePackages = { "com.example.spring" }, basePackageClasses = { EmbeddedUndertowConfig.class }, excludeFilters = {
+@ComponentScan(basePackages = { "com.example.spring" }, excludeFilters = {
 		@Filter(value = { WebAppContextConfig.class }, type = FilterType.ASSIGNABLE_TYPE),
+		@Filter(value = { RestController.class, Controller.class }, type = FilterType.ANNOTATION),
 		@Filter(pattern = { "com.example.spring.*.model.*" }, type = FilterType.REGEX) })
-public class Application {
-	private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
+@DependsOn(value = { "rootConfig" })
+public class JunitConfig {
+	private static final Logger LOGGER = LoggerFactory.getLogger(JunitConfig.class);
 
-	public Application() {
-		LOGGER.debug("생성자 Application()");
+	public JunitConfig() {
+		LOGGER.debug("생성자 JunitConfig()");
 	}
 
-	public static void main(String[] args) throws Exception {
-		LOGGER.debug("start");
-		SpringApplicationBuilder springApplicationBuilder = new SpringApplicationBuilder(Application.class);
-		SpringApplication springApplication = springApplicationBuilder.build();
-		springApplication.run();
+	@Bean
+	public Map<String, Object> configurationBeanInfo(ApplicationContext applicationContext) throws Exception {
+		Map<String, Object> map = applicationContext.getBeansWithAnnotation(Configuration.class);
+		for (String key : map.keySet()) {
+			LOGGER.debug("{} {}", key, map.get(key));
+		}
+
+		LOGGER.debug("");
+		String[] beanNames = applicationContext.getBeanDefinitionNames();
+		Arrays.sort(beanNames);
+		for (String beanName : beanNames) {
+			LOGGER.debug("{}", beanName);
+		}
+		return map;
 	}
 }
